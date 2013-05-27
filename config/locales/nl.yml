@@ -1,0 +1,6 @@
+nl:
+  spree:
+    sisow_ideal: "Sisow Ideal"
+    sisow_bancontact: "Sisow Bancontact"
+    sisow_sofort: "Sisow Sofort"
+    bank_selection: "Selecteer uw bank"

@@ -1,0 +1,6 @@
+<p data-hook="sisow_ideal"></p>
+
+<fieldset id="sisow_payment__<%= payment_method.id %>" data-hook>
+  <legend><%= Spree.t(:bank_selection) %></legend>
+  <%= select_tag "issuer_id", options_from_collection_for_select(Spree::BillingIntegration::SisowBilling::Ideal.issuer_list, "id", "name") %>
+</fieldset>
