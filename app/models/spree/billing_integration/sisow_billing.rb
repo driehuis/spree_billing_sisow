@@ -29,10 +29,10 @@ module Spree
         @callback.validate!
 
         #Update the transaction with the callback details
-        @sisow_transaction.update_attributes(status : @callback.status, sha1 : @callback.sha1)
+        @sisow_transaction.update_attributes(status: @callback.status, sha1: @callback.sha1)
 
 
-        @payment = @order.payments.where(amount : @order.total, source_id : @sisow_transaction, payment_method_id : payment_method).first
+        @payment = @order.payments.where(amount: @order.total, source_id: @sisow_transaction, payment_method_id: payment_method).first
         @payment.started_processing!
 
         if @callback.valid?
@@ -49,10 +49,59 @@ module Spree
 
     def self.configure_sisow
       Sisow.configure do |config|
-        config.merchant_id = Spree::Config.sisow_merchant_id
-        config.merchant_key = Spree::Config.sisow_merchant_key
-        config.test_mode = Spree::Config.sisow_test_mode
-        config.debug_mode = Spree::Config.sisow_debug_mode
+        config.merchant_id = '2537407799'
+        config.merchant_key = '0f9b49d384b4836c543f76d23a923e2cd2cfaec6'
+        config.test_mode = true
+        config.debug_mode = true
+      end
+    end
+
+    def self.start_transaction(order, opts = {}, transaction_type = "ideal")
+      sisow_transaction = SisowTransaction.create(transaction_type: transaction_type,
+          transaction_id: nil,
+          entrance_code: nil,
+          status: 'pending',
+          sha1: nil)
+
+      payment_method = PaymentMethod.where(type: "Spree::BillingIntegration::SisowBilling::#{transaction_type.capitalize}").first
+      payment = order.payments.create({:amount => order.total,
+                                       :source => sisow_transaction,
+                                       :payment_method => payment_method},
+                                      :without_protection => true)
+
+      #Update the entrance code with the payment identifier
+      sisow_transaction.update_attributes(entrance_code: payment.identifier)
+
+      #Update the payment state
+      payment.started_processing!
+      payment.pend!
+
+      #Set the options needed for the Sisow payment url
+      opts[:description] = "#{Spree::Config.site_name} - Order: #{order.number}"
+      opts[:purchase_id] = order.number
+      opts[:amount] = (order.total * 100).to_i
+      opts[:entrance_code] = payment.identifier
+
+      #Configure and initialize the provider
+      self.configure_sisow
+      sisow = self.provider(transaction_type, opts)
+
+      #Update the transaction id and entrance code on the sisow transaction
+      sisow_transaction.update_attributes(transaction_id: sisow.transaction_id, entrance_code: payment.identifier)
+
+      sisow.payment_url
+    end
+
+    def self.provider(transaction_type, options)
+      case transaction_type
+        when 'ideal'
+          return Sisow::IdealPayment.new(options)
+        when 'bancontact'
+          return Sisow::BancontactPayment.new(options)
+        when 'sofort'
+          return Sisow::SofortPayment.new(options)
+        else
+          raise "Unknown payment method (#{transaction_type})"
       end
     end
 
