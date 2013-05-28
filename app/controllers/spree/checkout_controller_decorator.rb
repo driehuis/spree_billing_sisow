@@ -18,7 +18,7 @@ module Spree
       sisow.process_response
 
       if sisow.success?
-        flash.notice = Spree.t(:order_processed_successfully)
+        flash.notice = Spree.t(:thank_you_for_your_order)
       elsif sisow.cancelled?
         flash.warning = Spree.t(:payment_has_been_cancelled)
       elsif sisow.failed?

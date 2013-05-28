@@ -11,18 +11,13 @@ module Spree
     end
 
     def redirect_url(order, opts = {})
-      BillingIntegration::SisowBilling.start_transaction(order, opts, 'ideal')
+      sisow = BillingIntegration::SisowBilling.new(order)
+      sisow.start_transaction('ideal', opts)
     end
 
     def self.issuer_list
       BillingIntegration::SisowBilling.configure_sisow
       Sisow::Issuer.list
     end
-
-    private
-      def options
-        @options
-      end
-      
   end 
 end

@@ -11,13 +11,8 @@ module Spree
     end
 
     def redirect_url(order, opts = {})
-      BillingIntegration::SisowBilling.start_transaction(order, opts, 'sofort')
+      sisow = BillingIntegration::SisowBilling.new(order)
+      sisow.start_transaction('sofort', opts)
     end
-
-    private
-    def options
-      @options
-    end
-
   end
 end
