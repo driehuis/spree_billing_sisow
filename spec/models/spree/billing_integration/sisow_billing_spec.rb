@@ -25,5 +25,8 @@ describe Spree::BillingIntegration::SisowBilling do
     expect(subject.send(:payment_provider, 'ideal', {})).to be_kind_of(Sisow::IdealPayment)
     expect(subject.send(:payment_provider, 'sofort', {})).to be_kind_of(Sisow::SofortPayment)
     expect(subject.send(:payment_provider, 'bancontact', {})).to be_kind_of(Sisow::BancontactPayment)
+    expect{
+      subject.send(:payment_provider, 'fakebank', {})
+    }.to raise_error
   end
 end

@@ -38,4 +38,8 @@ describe Spree::BillingIntegration::SisowBilling::Ideal do
 
     expect(subject.redirect_url(order, options)).to match(/https:\/\/www\.sisow\.nl\/Sisow\/iDeal\/Simulator\.aspx/)
   end
+
+  it "should respond with false when calling payment_profiles_supported?" do
+    expect(subject.payment_profiles_supported?).to be_false
+  end
 end

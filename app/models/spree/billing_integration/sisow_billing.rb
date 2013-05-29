@@ -1,11 +1,8 @@
 module Spree
   class BillingIntegration::SisowBilling < BillingIntegration
 
-    def initialize(order, sisow_return_data = nil)
+    def initialize(order)
       @order = order
-      @sisow_transaction = nil
-      @payment = nil
-      process_callback(sisow_return_data) if sisow_return_data
     end
 
     def success?
@@ -23,8 +20,9 @@ module Spree
       @payment.void?
     end
 
-    def process_response
+    def process_response(response)
       if @order.payments.where(:source_type => 'Spree::SisowTransaction').present?
+        @callback = initialize_callback(response)
         @callback.validate!
 
         #Update the transaction with the callback details
@@ -51,7 +49,7 @@ module Spree
         config.merchant_id = '2537407799'
         config.merchant_key = '0f9b49d384b4836c543f76d23a923e2cd2cfaec6'
         config.test_mode = true
-        config.debug_mode = true
+        config.debug_mode = false
       end
     end
 
@@ -112,7 +110,7 @@ module Spree
       end
     end
 
-    def process_callback(sisow_return_data)
+    def initialize_callback(sisow_return_data)
       @callback = Sisow::Api::Callback.new(
           :transaction_id => sisow_return_data[:trxid],
           :entrance_code => sisow_return_data[:ec],
