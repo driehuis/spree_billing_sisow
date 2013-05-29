@@ -2,9 +2,12 @@ require 'spec_helper'
 
 describe Spree::BillingIntegration::SisowBilling do
   let(:order) {
-    Spree::Order.new(:bill_address => Spree::Address.new,
+    order = Spree::Order.new(:bill_address => Spree::Address.new,
                      :ship_address => Spree::Address.new)
   }
+  let(:sisow_api_callback) { double(Sisow::Api::Callback)}
+  let(:sisow_transaction) { mock_model(Spree::SisowTransaction)}
+  let(:payment) { mock_model(Spree::Payment) }
   let(:subject) { Spree::BillingIntegration::SisowBilling.new(order) }
 
   context "when payment is not initialized" do
@@ -13,7 +16,7 @@ describe Spree::BillingIntegration::SisowBilling do
     end
 
     it "should respond to .failed? with false" do
-      expect(subject.failed?).to be_false
+      expect(subject.failed?).to be_true
     end
 
     it "should respond to .cancelled? with false" do
@@ -28,5 +31,39 @@ describe Spree::BillingIntegration::SisowBilling do
     expect{
       subject.send(:payment_provider, 'fakebank', {})
     }.to raise_error
+  end
+
+  it "should process the succes response correctly" do
+    Sisow::Api::Callback.stub(:new).and_return(sisow_api_callback)
+    Spree::SisowTransaction.stub_chain(:where, :first).and_return(sisow_transaction)
+
+    #Stub Sisow API Callback methods
+    sisow_api_callback.stub(:status).and_return("Success")
+    sisow_api_callback.stub(:sha1).and_return("1234567890")
+    sisow_api_callback.stub(:valid?).and_return(true)
+    sisow_api_callback.stub(:success?).and_return(true)
+
+    #Stub Order methods
+    order.stub_chain(:payments, :where, :present?).and_return(true)
+    order.stub_chain(:payments, :where, :first).and_return(payment)
+    order.stub(:completed?).and_return(true)
+
+    #Stub SisowTransaction methods
+    sisow_transaction.stub(:transaction_type).and_return('ideal')
+
+    #Stub Payment methods
+    payment.stub(:completed?).and_return(true)
+
+    #We should receive the following method calls
+    payment.should_receive(:started_processing!)
+    payment.should_receive(:complete!)
+    order.should_receive(:update_attributes)
+    order.should_receive(:finalize!)
+    sisow_transaction.should_receive(:update_attributes).with({:status=>"Success", :sha1=>"1234567890"})
+
+    expect {
+      subject.process_response({})
+    }.to_not raise_error
+    expect(subject.success?).to be_true
   end
 end

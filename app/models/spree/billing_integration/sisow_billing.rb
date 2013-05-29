@@ -11,7 +11,7 @@ module Spree
     end
 
     def failed?
-      return false unless @payment
+      return true unless @payment
       @payment.failed?
     end
 
@@ -22,17 +22,17 @@ module Spree
 
     def process_response(response)
       if @order.payments.where(:source_type => 'Spree::SisowTransaction').present?
-        @callback = initialize_callback(response)
-        @callback.validate!
-
-        #Update the transaction with the callback details
-        @sisow_transaction.update_attributes(status: @callback.status, sha1: @callback.sha1)
-
-
-        @payment = @order.payments.where(amount: @order.total, source_id: @sisow_transaction, payment_method_id: payment_method).first
-        @payment.started_processing!
+        initialize_callback(response)
 
         if @callback.valid?
+          #Update the transaction with the callback details
+          @sisow_transaction.update_attributes(status: @callback.status, sha1: @callback.sha1)
+
+
+          @payment = @order.payments.where(amount: @order.total, source_id: @sisow_transaction, payment_method_id: payment_method).first
+          @payment.started_processing!
+
+
           if @callback.success?
             complete_payment
           elsif @callback.failure? || @callback.expired?
@@ -57,9 +57,9 @@ module Spree
       @sisow_transaction = SisowTransaction.create(transaction_type: transaction_type, status: 'pending')
 
       @payment = @order.payments.create({:amount => @order.total,
-                                       :source => @sisow_transaction,
-                                       :payment_method => payment_method},
-                                      :without_protection => true)
+                                         :source => @sisow_transaction,
+                                         :payment_method => payment_method},
+                                        :without_protection => true)
 
       #Update the entrance code with the payment identifier
       @sisow_transaction.update_attributes(entrance_code: @payment.identifier)

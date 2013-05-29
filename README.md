@@ -1,6 +1,7 @@
 Spree Billing Sisow
 =================
 [![Build Status](https://travis-ci.org/xtr3me/spree_billing_sisow.png)](https://travis-ci.org/xtr3me/spree_billing_sisow)
+[![Code Climate](https://codeclimate.com/github/xtr3me/spree_billing_sisow.png)](https://codeclimate.com/github/xtr3me/spree_billing_sisow)
 
 Spree Billing Integration for Sisow (Ideal / Bancontact / Sofort) payments.
 This Gem is currently being build and tested, and is not yet released for use in production systems
