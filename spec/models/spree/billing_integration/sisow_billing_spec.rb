@@ -33,7 +33,7 @@ describe Spree::BillingIntegration::SisowBilling do
     }.to raise_error
   end
 
-  it "should process the succes response correctly" do
+  it "should process a succes response correctly" do
     Sisow::Api::Callback.stub(:new).and_return(sisow_api_callback)
     Spree::SisowTransaction.stub_chain(:where, :first).and_return(sisow_transaction)
 
@@ -65,5 +65,40 @@ describe Spree::BillingIntegration::SisowBilling do
       subject.process_response({})
     }.to_not raise_error
     expect(subject.success?).to be_true
+  end
+
+  it "should process a cancel response correctly" do
+    Sisow::Api::Callback.stub(:new).and_return(sisow_api_callback)
+    Spree::SisowTransaction.stub_chain(:where, :first).and_return(sisow_transaction)
+
+    #Stub Sisow API Callback methods
+    sisow_api_callback.stub(:status).and_return("Cancel")
+    sisow_api_callback.stub(:sha1).and_return("1234567890")
+    sisow_api_callback.stub(:valid?).and_return(true)
+    sisow_api_callback.stub(:success?).and_return(false)
+    sisow_api_callback.stub(:failure?).and_return(false)
+    sisow_api_callback.stub(:expired?).and_return(false)
+    sisow_api_callback.stub(:cancelled?).and_return(true)
+
+    #Stub Order methods
+    order.stub_chain(:payments, :where, :present?).and_return(true)
+    order.stub_chain(:payments, :where, :first).and_return(payment)
+
+    #Stub SisowTransaction methods
+    sisow_transaction.stub(:transaction_type).and_return('ideal')
+
+    #Stub Payment methods
+    payment.stub(:void?).and_return(true)
+
+    #We should receive the following method calls
+    payment.should_receive(:started_processing!)
+    payment.should_receive(:pend!)
+    payment.should_receive(:void!)
+    sisow_transaction.should_receive(:update_attributes).with({:status=>"Cancel", :sha1=>"1234567890"})
+
+    expect {
+      subject.process_response({})
+    }.to_not raise_error
+    expect(subject.cancelled?).to be_true
   end
 end

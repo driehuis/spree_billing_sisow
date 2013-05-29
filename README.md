@@ -9,11 +9,11 @@ This Gem is currently being build and tested, and is not yet released for use in
 Todo
 ------------
 - [x] Enable Travis
-- [ ] Configure Sisow correctly with Spree preferences
-- [ ] Write rspec for SisowBilling
-- [ ] Write rspec for Ideal
-- [ ] Write rspec for Bancontact
-- [ ] Write rspec for Sofort
+- [x] Configure Sisow correctly with Spree preferences
+- [x] Write rspec for SisowBilling
+- [x] Write rspec for Ideal
+- [x] Write rspec for Bancontact
+- [x] Write rspec for Sofort
 - [ ] Release Gem
 
 Installation

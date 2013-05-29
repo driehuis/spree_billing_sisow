@@ -8,6 +8,10 @@ Spree::Core::Engine.routes.draw do
       end
     end
   end
+
+  namespace :admin do
+    resource :sisow, :only => [:edit, :update], :controller => "sisow"
+  end
   
   match '/sisow' => 'sisow_status#update', :via => :post, :as => :sisow_status_update
 end

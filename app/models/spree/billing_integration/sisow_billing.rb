@@ -46,10 +46,10 @@ module Spree
 
     def self.configure_sisow
       Sisow.configure do |config|
-        config.merchant_id = '2537407799'
-        config.merchant_key = '0f9b49d384b4836c543f76d23a923e2cd2cfaec6'
-        config.test_mode = true
-        config.debug_mode = false
+        config.merchant_id = Spree::Config.sisow_merchant_id
+        config.merchant_key = Spree::Config.sisow_merchant_key
+        config.test_mode = Spree::Config.sisow_test_mode
+        config.debug_mode = Spree::Config.sisow_debug_mode
       end
     end
 

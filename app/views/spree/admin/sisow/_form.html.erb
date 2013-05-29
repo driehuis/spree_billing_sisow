@@ -1,0 +1,42 @@
+<%= form_tag admin_sisow_path, :method => :put do %>
+
+    <fieldset class="no-border-top">
+      <fieldset class="no-border-bottom">
+        <legend align="center"><%= Spree.t(:identification_settings)%></legend>
+
+        <div data-hook="attachment_path" class="field">
+          <%= label_tag 'preferences[sisow_merchant_id]', 'Merchant ID', :class => 'first' %>
+          <%= preference_field_tag 'preferences[sisow_merchant_id]', Spree::Config.sisow_merchant_id, :type => :string %>
+        </div>
+
+        <div data-hook="attachment_path" class="field">
+          <%= label_tag 'preferences[sisow_merchant_key]', 'Merchant Key', :class => 'first' %>
+          <%= preference_field_tag 'preferences[sisow_merchant_key]', Spree::Config.sisow_merchant_key, :type => :string %>
+        </div>
+
+      </fieldset>
+    </fieldset>
+
+
+    <fieldset class="no-border-top">
+      <fieldset class="no-border-bottom">
+        <legend align="center"><%= Spree.t(:environment_settings)%></legend>
+
+        <div data-hook="attachment_path" class="field">
+          <%= label_tag 'preferences[sisow_test_mode]', 'Test mode', :class => 'first' %>
+          <%= preference_field_tag 'preferences[sisow_test_mode]', Spree::Config.sisow_test_mode, :type => :boolean %>
+        </div>
+
+        <div data-hook="attachment_path" class="field">
+          <%= label_tag 'preferences[sisow_debug_mode]', 'Debug mode', :class => 'first' %>
+          <%= preference_field_tag 'preferences[sisow_debug_mode]', Spree::Config.sisow_debug_mode, :type => :boolean %>
+        </div>
+
+      </fieldset>
+    </fieldset>
+
+
+    <div class="form-buttons filter-actions actions" data-hook="buttons">
+      <%= button Spree.t('actions.update'), 'icon-refresh' %>
+    </div>
+<% end %>
