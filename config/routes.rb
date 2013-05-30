@@ -13,5 +13,5 @@ Spree::Core::Engine.routes.draw do
     resource :sisow, :only => [:edit, :update], :controller => "sisow"
   end
   
-  match '/sisow' => 'sisow_status#update', :via => :post, :as => :sisow_status_update
+  match '/sisow/:order_id' => 'sisow_status#update', :via => :get, :as => :sisow_status_update
 end

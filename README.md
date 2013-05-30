@@ -10,8 +10,9 @@ Todo
 ------------
 - [x] Enable Travis
 - [x] Configure Sisow correctly with Spree preferences
+- [x] Figure out why Sisow doesn't notify us (we were sending the path instead of the url)
+- [ ] Add error logging
 - [ ] Write Rspecs for some rainy day scenarios
-- [ ] Figure out why Sisow doesn't notify us
 - [ ] Release Gem
 
 Installation

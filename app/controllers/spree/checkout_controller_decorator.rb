@@ -33,11 +33,11 @@ module Spree
       opts = {}
       opts[:return_url] = sisow_return_order_checkout_url(@order)
       opts[:cancel_url] = sisow_cancel_order_checkout_url(@order)
-      opts[:notify_url] = sisow_status_update_path(@order)
-      opts[:callback_url] = sisow_status_update_path(@order)
+      opts[:notify_url] = sisow_status_update_url(@order)
+      opts[:callback_url] = sisow_status_update_url(@order)
 
       if payment_method.kind_of?(BillingIntegration::SisowBilling::Ideal)
-        opts[:issuerid] = params[:issuer_id]
+        opts[:issuer_id] = params[:issuer_id]
         redirect_to payment_method.redirect_url(@order, opts)
       elsif payment_method.kind_of?(BillingIntegration::SisowBilling::Sofort)
         redirect_to payment_method.redirect_url(@order, opts)
