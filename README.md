@@ -10,10 +10,8 @@ Todo
 ------------
 - [x] Enable Travis
 - [x] Configure Sisow correctly with Spree preferences
-- [x] Write rspec for SisowBilling
-- [x] Write rspec for Ideal
-- [x] Write rspec for Bancontact
-- [x] Write rspec for Sofort
+- [ ] Write Rspecs for some rainy day scenarios
+- [ ] Figure out why Sisow doesn't notify us
 - [ ] Release Gem
 
 Installation

@@ -1,10 +1,5 @@
 module Spree
   class BillingIntegration::SisowBilling::Ideal < BillingIntegration
-    preference :language, :string, :default => 'not_used'
-    preference :payment_options, :string, :default => 'not_used'
-    preference :server, :string, :default => 'not_used'
-
-    attr_accessible :preferred_language, :preferred_server, :preferred_payment_options
 
     def payment_profiles_supported?
       false
@@ -16,7 +11,7 @@ module Spree
     end
 
     def self.issuer_list
-      BillingIntegration::SisowBilling.configure_sisow
+      BillingIntegration::SisowBilling.configure
       Sisow::Issuer.list
     end
   end 

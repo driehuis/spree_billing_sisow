@@ -3,6 +3,7 @@ module Spree
 
     def initialize(order)
       @order = order
+      BillingIntegration::SisowBilling.configure
     end
 
     def success?
@@ -28,10 +29,8 @@ module Spree
           #Update the transaction with the callback details
           @sisow_transaction.update_attributes(status: @callback.status, sha1: @callback.sha1)
 
-
           @payment = @order.payments.where(amount: @order.total, source_id: @sisow_transaction, payment_method_id: payment_method).first
           @payment.started_processing!
-
 
           if @callback.success?
             complete_payment
@@ -41,15 +40,6 @@ module Spree
             cancel_payment
           end
         end
-      end
-    end
-
-    def self.configure_sisow
-      Sisow.configure do |config|
-        config.merchant_id = Spree::Config.sisow_merchant_id
-        config.merchant_key = Spree::Config.sisow_merchant_key
-        config.test_mode = Spree::Config.sisow_test_mode
-        config.debug_mode = Spree::Config.sisow_debug_mode
       end
     end
 
@@ -73,14 +63,23 @@ module Spree
       opts[:amount] = (@order.total * 100).to_i
       opts[:entrance_code] = @payment.identifier
 
-      #Configure and initialize the provider
-      BillingIntegration::SisowBilling.configure_sisow
+      #Initialize the provider
       sisow = payment_provider(transaction_type, opts)
 
       #Update the transaction id and entrance code on the sisow transaction
       @sisow_transaction.update_attributes(transaction_id: sisow.transaction_id, entrance_code: @payment.identifier)
 
       sisow.payment_url
+    end
+
+    def self.configure
+      Sisow.configure do |config|
+        config.merchant_id = Spree::Config.sisow_merchant_id
+        config.merchant_key = Spree::Config.sisow_merchant_key
+        config.test_mode = Spree::Config.sisow_test_mode
+        config.debug_mode = Spree::Config.sisow_debug_mode
+      end
+      HTTPI.logger = logger
     end
 
     private

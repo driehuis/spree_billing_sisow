@@ -14,13 +14,6 @@ module SpreeBillingSisow
         inject_into_file 'app/assets/stylesheets/admin/all.css', " *= require admin/spree_billing_sisow\n", :before => /\*\//, :verbose => true
       end
 
-      def add_sisow_configuration
-        initializer("sisow.rb") do
-          "Sisow.configure do |config|\n  config.merchant_key = 'your-merchant-key'\n  config.merchant_id  = 'your-merchant-id'\n  config.test_mode    = false   # default: false\n  config.debug_mode   = false   # default: false\nend"
-        end
-        puts "Don't forget to configure Sisow in config/initializers/sisow.rb"
-      end
-
       def add_migrations
         run 'bundle exec rake railties:install:migrations FROM=spree_billing_sisow'
       end
