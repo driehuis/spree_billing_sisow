@@ -4,11 +4,14 @@ describe Spree::CheckoutController do
   let(:token) { 'some_token' }
   let(:user) { stub_model(Spree::LegacyUser) }
   let(:order) { FactoryGirl.create(:order_with_totals) }
-  let(:sisow_billing) { mock_model(Spree::BillingIntegration::SisowBilling) }
+  let(:billing_integration) {
+    double(Spree::BillingIntegration::SisowBilling)
+  }
 
   before do
     controller.stub :try_spree_current_user => user
     controller.stub :current_order => order
+    controller.stub :handle_sisow_response => billing_integration
   end
 
   #it "should handle the sisow success response and set the flash to thank_you_for_your_order" do
@@ -26,12 +29,9 @@ describe Spree::CheckoutController do
   #end
   #
   #it "should handle a garbage sisow response and set the flash to payment_processing_failed" do
-  #  Spree::BillingIntegration::SisowBilling.stub(:new).and_raise("this error")
-  #  #.and_return(sisow_billing)
-  #  sisow_billing.stub(:process_response).and_raise("this error")
-  #  sisow_billing.should_receive(:failed?).and_return(false)
+  #  billing_integration.should_receive(:new)
+  #  billing_integration.should_receive(:failed?).and_return(true)
   #  spree_post :sisow_return
-  #
   #  expect(flash[:notice]).to be_false
   #end
 

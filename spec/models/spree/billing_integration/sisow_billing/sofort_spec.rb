@@ -25,13 +25,27 @@ describe Spree::BillingIntegration::SisowBilling::Sofort do
     order.stub(:number) { "O12345678" }
     order.stub_chain(:payments, :create).and_return(payment)
 
-    payment.should_receive(:started_processing!)
-    payment.should_receive(:pend!)
+    #payment.should_receive(:started_processing!)
+    #payment.should_receive(:pend!)
 
     expect(subject.redirect_url(order, options)).to match(/https:\/\/www\.sisow\.nl\/Sisow\/iDeal\/Simulator\.aspx/)
   end
 
   it "should respond with false when calling payment_profiles_supported?" do
     expect(subject.payment_profiles_supported?).to be_false
+  end
+
+  it "should respond with true when calling auto_capture?" do
+    expect(subject.auto_capture?).to be_true
+  end
+
+  it "should respond with true when the transaction was successfull" do
+    sisow_transaction.stub_chain(:status, :downcase).and_return('success')
+    expect(subject.purchase('123', sisow_transaction, {}).success?).to be_true
+  end
+
+  it "should respond with false when the transaction was unsuccessfull" do
+    sisow_transaction.stub_chain(:status, :downcase).and_return('expired')
+    expect(subject.purchase('123', sisow_transaction, {}).success?).to be_false
   end
 end

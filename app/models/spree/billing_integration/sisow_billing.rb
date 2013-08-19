@@ -30,13 +30,8 @@ module Spree
           @sisow_transaction.update_attributes(status: @callback.status, sha1: @callback.sha1)
 
           @payment = @order.payments.where(amount: @order.total, source_id: @sisow_transaction, payment_method_id: payment_method).first
-          @payment.started_processing!
 
-          if @callback.success?
-            complete_payment
-          elsif @callback.failure? || @callback.expired?
-            fail_payment
-          elsif @callback.cancelled?
+          if @callback.cancelled? && !@payment.void?
             cancel_payment
           end
         end
@@ -53,9 +48,6 @@ module Spree
 
       #Update the entrance code with the payment identifier
       @sisow_transaction.update_attributes(entrance_code: @payment.identifier)
-
-      #Update the payment state
-      start_payment
 
       #Set the options needed for the Sisow payment url
       opts[:description] = "#{Spree::Config.site_name} - Order: #{@order.number}"
@@ -120,25 +112,8 @@ module Spree
       @sisow_transaction = SisowTransaction.where(transaction_id: sisow_return_data[:trxid], entrance_code: sisow_return_data[:ec]).first
     end
 
-    def complete_payment
-      @payment.complete!
-
-      @order.update_attributes({:state => "complete", :completed_at => Time.now}, :without_protection => true)
-      @order.finalize!
-    end
-
     def cancel_payment
-      @payment.pend!
       @payment.void!
-    end
-
-    def fail_payment
-      @payment.failure!
-    end
-
-    def start_payment
-      @payment.started_processing!
-      @payment.pend!
     end
   end
 end

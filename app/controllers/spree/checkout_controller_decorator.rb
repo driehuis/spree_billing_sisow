@@ -4,12 +4,18 @@ module Spree
 
     def sisow_return
       handle_sisow_response
-      redirect_to completion_route
+      @order.next
+      if @order.complete?
+        flash.notice = Spree.t(:order_processed_successfully)
+        redirect_to order_path(@order, :token => @order.token)
+      else
+        redirect_to checkout_state_path(@order.state)
+      end
     end
 
     def sisow_cancel
       handle_sisow_response
-      redirect_to edit_order_path(@order)
+      redirect_to checkout_state_path(@order.state)
     end
 
     private
@@ -17,12 +23,8 @@ module Spree
       sisow = BillingIntegration::SisowBilling.new(@order)
       sisow.process_response(params)
 
-      if sisow.failed?
-        flash.error = Spree.t(:payment_processing_failed)
-      elsif sisow.success?
-        flash.notice = Spree.t(:thank_you_for_your_order)
-      elsif sisow.cancelled?
-        flash.warning = Spree.t(:payment_has_been_cancelled)
+      if sisow.cancelled?
+        flash.alert = Spree.t(:payment_has_been_cancelled)
       end
     end
 
@@ -43,9 +45,6 @@ module Spree
         redirect_to payment_method.redirect_url(@order, opts)
       elsif payment_method.kind_of?(BillingIntegration::SisowBilling::Bancontact)
         redirect_to payment_method.redirect_url(@order, opts)
-      else
-        flash.error = Spree.t(:payment_processing_failed)
-        redirect_to completion_route
       end
     end
 
