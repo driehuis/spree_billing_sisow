@@ -41,12 +41,18 @@ module Spree
     def start_transaction(transaction_type, opts = {})
       @sisow_transaction = SisowTransaction.create(transaction_type: transaction_type, status: 'pending')
 
-      @payment = @order.payments.create([{:amount => @order.total} ,
-                                         {:source => @sisow_transaction},
-                                         {:payment_method => payment_method}])
+      @payment = @order.payments.create(amount: @order.total,   									    										source: @sisow_transaction
+      									payment_method: payment_method)
+
+      puts '#######################'
+      puts '#######################'
+      puts @payment.inspect 
+      puts '#######################'
+      puts '#######################'
 
       #Update the entrance code with the payment identifier
       @sisow_transaction.update(entrance_code: @payment.identifier)
+
 
       #Set the options needed for the Sisow payment url
       opts[:description] = "#{Spree::Config.site_name} - Order: #{@order.number}"
