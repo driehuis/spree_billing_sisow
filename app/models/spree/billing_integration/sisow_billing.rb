@@ -41,10 +41,9 @@ module Spree
     def start_transaction(transaction_type, opts = {})
       @sisow_transaction = SisowTransaction.create(transaction_type: transaction_type, status: 'pending')
 
-      @payment = @order.payments.create({:amount => @order.total,
-                                         :source => @sisow_transaction,
-                                         :payment_method => payment_method},
-                                        :without_protection => true)
+      @payment = @order.payments.create([{:amount => @order.total} ,
+                                         {:source => @sisow_transaction},
+                                         {:payment_method => payment_method}])
 
       #Update the entrance code with the payment identifier
       @sisow_transaction.update_attributes(entrance_code: @payment.identifier)
