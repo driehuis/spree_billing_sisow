@@ -29,6 +29,15 @@ module Spree
     end
 
     def confirm_sisow
+      failuretext = '
+Door een probleem bij onze bank zijn tijdelijk geen online betalingen mogelijk.<br>
+U kunt de betaling opnieuw proberen, of kiezen voor levering op Factuur.
+Vermeld dan bij Verzendinstructies s.v.p. dat u problemen ondervond met
+de electronische betaling.
+Mede namens de bank bieden wij u onze welgemeende excuses aan.
+<br>
+<a href="/cart">Klik hier om verder te gaan</a>.
+      '
       return unless (params[:state] == "payment") && params[:order][:payments_attributes]
 
       payment_method = PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
@@ -38,13 +47,18 @@ module Spree
       opts[:notify_url] = sisow_status_update_url(@order)
       opts[:callback_url] = sisow_status_update_url(@order)
 
-      if payment_method.kind_of?(BillingIntegration::SisowBilling::Ideal)
-        opts[:issuer_id] = params[:issuer_id]
-        redirect_to payment_method.redirect_url(@order, opts)
-      elsif payment_method.kind_of?(BillingIntegration::SisowBilling::Sofort)
-        redirect_to payment_method.redirect_url(@order, opts)
-      elsif payment_method.kind_of?(BillingIntegration::SisowBilling::Bancontact)
-        redirect_to payment_method.redirect_url(@order, opts)
+      begin
+        if payment_method.kind_of?(BillingIntegration::SisowBilling::Ideal)
+          opts[:issuer_id] = params[:issuer_id]
+          redirect_to payment_method.redirect_url(@order, opts)
+        elsif payment_method.kind_of?(BillingIntegration::SisowBilling::Sofort)
+          redirect_to payment_method.redirect_url(@order, opts)
+        elsif payment_method.kind_of?(BillingIntegration::SisowBilling::Bancontact)
+          redirect_to payment_method.redirect_url(@order, opts)
+        end
+      rescue Sisow::Exception => e
+        logger.error "ERROR: Sisow reply failed, #{e.message}"
+        render :text => failuretext, :status => 500
       end
     end
 
