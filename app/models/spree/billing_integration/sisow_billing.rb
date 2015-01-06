@@ -34,7 +34,12 @@ module Spree
           if @callback.cancelled? && !@payment.void?
             cancel_payment
           end
+        else
+          logger.error "ERROR: Sisow response received for order #{@order.id}), not valid:"
+          logger.error @callback.inspect
         end
+      else
+        logger.error "ERROR: Sisow response received for order #{@order.id}) without SisowTransaction"
       end
     end
 
